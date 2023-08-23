@@ -1,0 +1,145 @@
+{% extends 'base.html' %} {% block content %} {% load static %}
+
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css'%}">
+<link rel="stylesheet" href="{% static 'css/orcamento/orcamento.css'%}">
+
+<div class="container-fluid">
+  
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Clientes</h1>
+      <a href="{% url 'cadastro_clientes' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+        ><i class="fas fa-user-plus fa-sm text-white-50"></i> Cadastrar Cliente</a
+      >
+    </div>
+
+    <div class="messages">
+      {% for message in messages %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+      {% endfor %}
+    </div>
+
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Orçamentos pendentes (Qtd: <span>{{ lista_clientes }}</span>)</h6>
+      <a href="{% url 'exportar_clientes' %}">
+          <i class="fa fa-solid fa-file-excel"></i>
+        </a>
+    </div>  
+    
+    <div class="card-body">
+        <div class="table-responsive">
+            <div class="input-group">
+                <p class="ml-3 mt-2 text-info">Escolha o cliente para efetuar o orçamento</p>                    
+                <div class="form-outline">
+                    <label class="form-label" for="form1">Busca: <input type="search" id="searchInput" class="form-control" /></label>
+                </div>          
+        </div>
+        <table
+          class="table table-bordered"
+          id="clientesTable"
+          width="100%"
+          cellspacing="0"
+        >
+        <thead>
+          <tr>
+              <th>NOME</th>
+              <th>CPF</th>
+              <th>TELEFONE</th>
+              <th>E-MAIL</th>
+              <th>CARRO</th>
+              <th>PLACA</th>
+              <th>VALOR ESTIMADO</th>
+              <th>AÇÕES</th>
+          </tr>
+      </thead>
+      <tbody id="tabela-orcamentos">
+          {% for orcamento in orcamentos_com_numero %}
+              <tr>
+                  <td>{{ orcamento.cliente__nome }}</td>
+                  <td>{{ orcamento.cliente__cpf }}</td>
+                  <td>{{ orcamento.cliente__telefone }}</td>
+                  <td>{{ orcamento.cliente__email }}</td>
+                  <td>{{ orcamento.cliente__veiculo__modelo }}</td>
+                  <td>{{ orcamento.cliente__veiculo__placa }}</td>
+                  <td>{{ orcamento.valor_estimado }}</td>
+                  <td>
+                    <a class="" data-toggle="modal" data-target="#modalConfirmarExclusao-{{ orcamento.id }}">
+                      <i class="fas fa-trash"></i>
+                  </a>
+                </td>
+                <td>
+                  <a class="aprovar" data-toggle="modal" data-target="#modalConfirmarAprovacao-{{ orcamento.id }}">
+                    <i class="fas fa-check-circle custom-check-icon text-success"></i>
+                </a>
+
+                <!-- Modal de confirmação de exclusão -->
+            <div class="modal fade" id="modalConfirmarExclusao-{{ orcamento.id }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <h5 class="modal-title" id="modalLabel">Confirmar Exclusão</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                          </button>
+                      </div>
+                      <div class="modal-body">
+                          Tem certeza de que deseja excluir este orçamento?
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                          <form method="post" action="{% url 'excluir_orcamento' orcamento.id %}">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-danger">Excluir</button>
+                          </form>
+                      </div>
+                  </div>
+              </div>
+          </div>
+    
+                <!-- Modal de confirmação de aprovação -->
+                <div class="modal fade" id="modalConfirmarAprovacao-{{ orcamento.id }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalLabel">Confirmar Aprovação</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                Tem certeza de que deseja aprovar este orçamento?
+                                Após a confirmação, o orçamento será transferido para a página OS em aberto.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                <form method="post" action="{% url 'os_aberta' orcamento.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success">Aprovar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </td>
+              </tr>
+          {% endfor %}
+      </tbody>
+        </table>
+        <div id="pagination" class="pagination" style="justify-content: space-between">
+          <span id="prevPage">&laquo; Anterior</span>
+          <span id="nextPage">Próximo &raquo;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'js/clientes/orcamentos_abertos.js' %}"></script>
+{% endblock %}

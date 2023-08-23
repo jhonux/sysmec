@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}  <!-- Ou o seu template base -->
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/clientes/cadastro_clientes.css'%}">
+<div class="container">
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <h4 class="mb-3 text-primary">Editar Cliente</h4>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group col-md-11 formulario">
+                        <span>NOME: {{ form.nome }}</span>                        
+                        <span>CPF:{{ form.cpf }}</span>
+                    </div>
+
+                    <div class="form-group col-md-11 formulario">
+                        <span>E-MAIL:{{ form.email }}</span>
+                        <span>TELEFONE:{{ form.telefone }}</span>
+                    </div>
+
+                    <div class="form-group col-md-11">
+                        <span>ENDEREÇO:{{ form.endereco }}</span>
+                    </div>
+
+                    <div class="form-group col-md-11 formulario">                        
+                        {% for veiculo in veiculo_forms %}
+                            <span>MARCA:{{ veiculo.marca }}</span>
+                            <span>MODELO:{{ veiculo.modelo }}</span>
+                            <span>PLACA:{{ veiculo.placa }}</span>
+                            <span>ANO:{{ veiculo.ano }}</span>
+                        {% endfor %}                              
+                    </div>
+                </div>
+                <div class="text-right">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

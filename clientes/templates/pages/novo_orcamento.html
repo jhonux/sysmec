@@ -1,0 +1,144 @@
+{% extends 'base.html' %} {% block content %} {% load static %}
+
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css'%}">
+<link rel="stylesheet" href="{% static 'css/orcamento/orcamento.css'%}">
+
+<div class="container-fluid">
+  
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Clientes</h1>
+      <a href="{% url 'cadastro_clientes' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+        ><i class="fas fa-user-plus fa-sm text-white-50"></i> Cadastrar Cliente</a>
+    </div>
+
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Clientes cadastrados (Qtd: <span id="qtdClientes"></span>)</h6>
+      <a href="{% url 'exportar_clientes' %}">
+          <i class="fa fa-solid fa-file-excel"></i>
+        </a>
+    </div>
+    
+    <div class="card-body">
+        <div class="table-responsive">
+            <div class="input-group">
+                <p class="ml-3 mt-2 text-info">Escolha o cliente para efetuar o orçamento</p>                    
+                <div class="form-outline">
+                    <label class="form-label" for="form1">Busca: <input type="search" id="searchInput" class="form-control" /></label>
+                </div>          
+        </div>
+        <table
+          class="table table-bordered"
+          id="clientesTable"
+          width="100%"
+          cellspacing="0"
+        >
+        {% for cliente in clientes_com_carro %}
+          <h1>{{ cliente.nome }}</h1>
+        {% endfor %}
+          <thead>
+            <tr>
+              <th>NOME</th>
+              {% comment %} <th>CPF</th> {% endcomment %}
+              <th>TELEFONE</th>
+              <th>E-MAIL</th>
+              <th>CARRO</th>
+              <th>PLACA</th>
+              <th>AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in clientes_com_veiculo %}
+
+            <tr>
+              <td>{{ item.cliente.nome }}</td>
+              <td>{{ item.cliente.telefone }}</td>
+              <td>{{ item.cliente.email }}</td>
+
+              {% if item.veiculos %} {% for veiculo in item.veiculos %}
+              <td>{{ veiculo.modelo }}</td>
+              <td>{{ veiculo.placa }}</td>
+              {% endfor %} {% else %}
+              <td>Não possui veículo</td>
+              {% endif %}
+              <td>
+                <div class="icons">
+                  <a class="cliente-editar ml-2" href="{% url 'criar_orcamento' cliente_id=item.cliente.id %}">
+                      <i class="fas fa-edit edit" title="Criar Orçamento"></i>
+                  </a>
+              </div>
+            </td>
+            </tr>
+            <div class="modal fade" id="clienteModal{{ item.cliente.id }}" tabindex="-1" role="dialog" aria-labelledby="clienteModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <h5 class="modal-title" id="clienteModalLabel">Criar Orçamento</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                              <span aria-hidden="true">&times;</span>
+                          </button>
+                      </div>
+                      <div class="modal-body">
+                          <p><strong>Nome:</strong> {{ item.cliente.nome }}</p>
+                          <p><strong>CPF:</strong> {{ item.cliente.cpf }}</p>
+                          <p><strong>Telefone:</strong> {{ item.cliente.telefone }}</p>
+                          <p><strong>Email:</strong> {{ item.cliente.email }}</p>
+                          <p><strong>Endereço:</strong> {{ item.cliente.endereco }}</p>
+          
+                          {% if item.veiculos %}
+                          <p>Veículos:</p>
+                          <ul>
+                              {% for veiculo in item.veiculos %}
+                              <li>Modelo: {{ veiculo.modelo }},
+                                 Placa: {{ veiculo.placa }},
+                                Ano: {{ veiculo.ano }}</li>
+                              {% endfor %}
+                          </ul>
+                          {% else %}
+                          <p>Não possui veículo</p>
+                          {% endif %}
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Modal de Confirmação de Exclusão -->
+          <div class="modal fade" id="confirmarExclusao{{ item.cliente.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmarExclusaoLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmarExclusaoLabel">Confirmar Exclusão</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Tem certeza de que deseja excluir o cliente "{{ item.cliente.nome }}"?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <a class="btn btn-danger" href="{% url 'excluir_cliente' cliente_id=item.cliente.id %}">Excluir</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+          <!-- Fim do Modal -->          
+            {% endfor %}
+          </tbody>
+        </table>
+        <div id="pagination" class="pagination" style="justify-content: space-between">
+          <span id="prevPage">&laquo; Anterior</span>
+          <span id="nextPage">Próximo &raquo;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/clientes/clientes.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% endblock %}

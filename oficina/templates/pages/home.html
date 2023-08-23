@@ -1,0 +1,247 @@
+{% extends 'base.html' %} {% block content %}
+{% load static %}
+
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+  <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+  <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+    ><i class="fas fa-download fa-sm text-white-50"></i> Generate Report</a
+  >
+</div>
+<div class="row">
+  <!-- Earnings (Monthly) Card Example -->
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-primary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div
+              class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+            >
+              OS em aberto
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="qtdOrdem"></span></div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-wrench fa-2x text-gray-300"></i>
+            {% comment %} <i class="fas fa-toolbox fa-2x text-gray-300"></i> {% endcomment %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Earnings (Monthly) Card Example -->
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div
+              class="text-xs font-weight-bold text-success text-uppercase mb-1"
+            >
+              Earnings (Annual)
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Earnings (Monthly) Card Example -->
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-info shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Tasks
+            </div>
+            <div class="row no-gutters align-items-center">
+              <div class="col-auto">
+                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                  <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="qtdOrcamentos"></span></div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="progress progress-sm mr-2">
+                  <div
+                    class="progress-bar bg-info"
+                    role="progressbar"
+                    style="width: 50%"
+                    aria-valuenow="50"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Requests Card Example -->
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div
+              class="text-xs font-weight-bold text-warning text-uppercase mb-1"
+            >
+              Cllientes Cadastrados
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="qtdClientes"></span></div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-user fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Clientes cadastrados</h6>
+  </div>
+  
+  <div class="card-body">
+    <div class="table-responsive">
+      <div class="input-group">
+        <div class="form-outline">
+          <label class="form-label" for="form1">Busca: <input type="search" id="searchInput" class="form-control" /></label>
+          
+        </div>          
+      </div>
+      <table
+        class="table table-bordered"
+        id="clientesTable"
+        width="100%"
+        cellspacing="0"
+      >
+      {% for cliente in clientes_com_carro %}
+        <h1>{{ cliente.nome }}</h1>
+      {% endfor %}
+        <thead>
+          <tr>
+            <th>Nº</th>
+            <th>CLIENTE</th>
+            <th>TELEFONE</th>
+            <th>CARRO</th>
+            <th>PLACA</th>
+            <th>AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in clientes_com_veiculo %}
+
+          <tr>
+            <td>{{ item.cliente.nome }}</td>
+            <td>{{ item.cliente.telefone }}</td>
+            <td>{{ item.cliente.email }}</td>
+
+            {% if item.veiculos %} {% for veiculo in item.veiculos %}
+            <td>{{ veiculo.modelo }}</td>
+            <td>{{ veiculo.placa }}</td>
+            {% endfor %} {% else %}
+            <td>Não possui veículo</td>
+            {% endif %}
+            <td>
+              <div class="icons">
+                <a class="cliente-detalhe" href="#" data-toggle="modal" data-target="#clienteModal{{ item.cliente.id }}">
+                    <i class="fas fa-eye ml-2" title="Ver detalhes"></i>
+                </a>
+                <a class="cliente-editar ml-2" href="{% url 'editar_cliente' cliente_id=item.cliente.id %}">
+                    <i class="fas fa-edit edit" title="Editar"></i>
+                </a>
+                <a class="cliente-excluir ml-2" href="#" data-toggle="modal" data-target="#confirmarExclusao{{ item.cliente.id }}">
+                  <i class="fas fa-trash del" title="Excluir"></i>
+              </a>
+            </div>
+          </td>
+          </tr>
+          <div class="modal fade" id="clienteModal{{ item.cliente.id }}" tabindex="-1" role="dialog" aria-labelledby="clienteModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="clienteModalLabel">Detalhes do Cliente</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Nome:</strong> {{ item.cliente.nome }}</p>
+                        <p><strong>CPF:</strong> {{ item.cliente.cpf }}</p>
+                        <p><strong>Telefone:</strong> {{ item.cliente.telefone }}</p>
+                        <p><strong>Email:</strong> {{ item.cliente.email }}</p>
+                        <p><strong>Endereço:</strong> {{ item.cliente.endereco }}</p>
+        
+                        {% if item.veiculos %}
+                        <p>Veículos:</p>
+                        <ul>
+                            {% for veiculo in item.veiculos %}
+                            <li>Modelo: {{ veiculo.modelo }},
+                               Placa: {{ veiculo.placa }},
+                              Ano: {{ veiculo.ano }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p>Não possui veículo</p>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Confirmação de Exclusão -->
+        <div class="modal fade" id="confirmarExclusao{{ item.cliente.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmarExclusaoLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="confirmarExclusaoLabel">Confirmar Exclusão</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                          <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
+                  <div class="modal-body">
+                      <p>Tem certeza de que deseja excluir o cliente "{{ item.cliente.nome }}"?</p>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                      <a class="btn btn-danger" href="{% url 'excluir_cliente' cliente_id=item.cliente.id %}">Excluir</a>
+                  </div>
+              </div>
+          </div>
+      </div>
+        <!-- Fim do Modal -->          
+          {% endfor %}
+        </tbody>
+      </table>
+      <div id="pagination" class="pagination" style="justify-content: space-between">
+        <span id="prevPage">&laquo; Anterior</span>
+        <span id="nextPage">Próximo &raquo;</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="{% static 'js/oficina/oficina.js' %}"></script>
+<script src="{% static 'js/clientes/os_aberta.js' %}"></script>
+{% endblock %}

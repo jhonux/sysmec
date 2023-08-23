@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/clientes/criar_orcamentos.css' %}">
+
+<div class="container">
+    <h1 class="title">Criar Orçamento para {{ cliente.nome }}</h1>
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="client-info">  
+
+                    <div class="formulario">
+                        <div class="info-item">
+                            <strong>Cliente:</strong> {{ cliente.nome }}
+                        </div>
+                        <div class="info-item">
+                            <strong>CPF:</strong> {{ cliente.cpf }}
+                        </div>
+                    </div>
+
+                    <div class="formulario">
+                        <div class="info-item">
+                            <strong>Telefone:</strong> {{ cliente.telefone }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Email:</strong> {{ cliente.email }}
+                        </div>
+                    </div>
+
+                    <div class="formulario">
+                        <div class="info-item">
+                            <strong>Endereço:</strong> {{ cliente.endereco }}
+                        </div>
+                    </div>
+               
+                    {% if cliente.veiculo_set.all %}
+                    <strong>Carro:</strong>                           
+                        {% for veiculo in cliente.veiculo_set.all %}
+                            <div class="formulario">
+                                <div class="vehicles">
+                                    <strong>Marca:</strong> {{ veiculo.marca }} 
+                                </div>
+                                <div class="vehicles">
+                                    <strong>Modelo</strong> {{ veiculo.modelo }} 
+                                </div>
+                            
+                            <div class="vehicles">
+                                <strong>Placa:</strong> {{ veiculo.placa }} 
+                            </div>
+                            <div class="vehicles">
+                                <strong>Ano</strong> {{ veiculo.ano }} 
+                            </div>
+                        </div>
+                                {% endfor %}                            
+                        {% else %}
+                            <p>Não possui veículo</p>
+                        {% endif %}
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ form.servicos_propostos.label_tag }}
+                    {{ form.servicos_propostos }}
+                </div>
+                <div class="form-group">
+                    {{ form.valor_estimado.label_tag }}
+                    {{ form.valor_estimado }}
+                </div>
+                <button type="submit" class="btn btn-primary">Criar Orçamento</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

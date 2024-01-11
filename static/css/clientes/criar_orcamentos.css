@@ -1,0 +1,97 @@
+.col-md p {
+    margin-bottom: 0 !important;
+}
+
+.col-md-11 {
+    flex: none;
+    max-width: none;
+}
+.form-control {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    justify-content: center;
+}
+
+.car-1 {
+    display: flex;
+}
+
+.car-2 {
+    display: flex;
+}
+
+.icon {
+    display: flex;
+    justify-content: end;
+}
+
+input {
+    display: block;
+    width: 100%;
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #6e707e;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #d1d3e2;
+    border-radius: 0.35rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+input:focus,
+input:active {   
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);  /* Efeito de sombra ao clicar */
+    outline: none;  /* Remova o contorno padrão do navegador ao clicar */
+}
+
+.formulario {
+    display: flex;
+    gap: 10px;
+
+}
+
+span {
+    width: 100%;
+}
+
+label {
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
+
+.custom-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    resize: vertical
+}
+
+.info-item {
+    border: 1px solid #ccc;
+    padding: 6px;
+    padding-left: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.vehicles {
+    padding-left: 10px;
+    border: 1px solid #ccc;
+    padding: 6px;
+    border-radius: 0.35rem;
+    width: 100%
+}
+
+.vehicles ul {
+    padding-left: 20px;
+}
+

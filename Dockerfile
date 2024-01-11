@@ -5,7 +5,7 @@ COPY . /app
 
 
 RUN python -m venv venv && \
-    . venv/bin/activate && \
+    source venv/Scripts/activate && \
     pip install --no-cache-dir -r requirements.txt
 
 CMD ["python", "manage.py"]

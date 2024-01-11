@@ -3,7 +3,6 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/clientes/cadastro_clientes.css'%}">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <div class="container">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -14,9 +13,9 @@
             <h4 class="mb-3 text-primary">
                 Cadastro de novo cliente
             </h4>
-            <form action="{% url 'cadastro_clientes' %}" method="post">
+            <form method="post">
+                {% csrf_token %}
                 <div class="form-row">
-                    {% csrf_token %}
                     <div class="form-group col-md-11 formulario">
                         <span>NOME: {{ form.nome }}</span>                        
                         <span>CPF:{{ form.cpf }}</span>                        
@@ -31,46 +30,35 @@
                         <span>ENDEREÇO:{{ form.endereco }}</span>
                     </div>
 
-                    <div class="form-group col-md-11 formulario carro">                        
-                        <span>MARCA:{{ veiculo_form.marca }}</span>
-                        <span>MODELO:{{ veiculo_form.modelo }}</span>
-                        <span>PLACA:{{ veiculo_form.placa }}</span>
-                        <span>ANO:{{ veiculo_form.ano }}</span>
+                    {{ form_veiculo.management_form }}
+                    {% for carro in form_veiculo.forms %}
+                    <div class="form-group col-md-11 formulario carro">
+                        <span>MARCA:{{ carro }}</span>
+                        
+                        
                     </div>
-                </div>
-
-                <div class="text-left">
-                    <input type="hidden" name="numero_de_carros" id="numero_de_carros" value="1">
-                    <button type="button" class="btn btn-sm btn-success mt-2" id="adicionar-carro">Adicionar Carro</button>  
-                </div>  
-
+                    {% endfor %}
+                </div>    
                 <div class="text-right">
-                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <a class="btn btn-danger" href={% url 'clientes' %}>Cancelar</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
-<script>
-    $(document).ready(function() {
-        var numCarros = 1; // Número inicial de carros
-    
-        $("#adicionar-carro").click(function() {
-            numCarros++; // Aumentar o número de carros
-            $("#numero_de_carros").val(numCarros); // Atualizar o valor no campo hidden
-    
-            var novoCarroHTML = `
-            <div class="form-group col-md-11 formulario carro">
-                <span>MARCA: <input type="text" name="marcas[${numCarros - 1}]" /></span>
-                <span>MODELO: <input type="text" name="modelos[${numCarros - 1}]" /></span>
-                <span>PLACA: <input type="text" name="placas[${numCarros - 1}]" /></span>
-                <span>ANO: <input type="text" name="anos[${numCarros - 1}]" /></span>
-            </div>
-            `;
-    
-            $(".carro").last().after(novoCarroHTML); // Adicionar campos de carro
-        });
-    });
-</script>
 
-{% endblock %}
+
+{% endblock content %}
+
+{% block scripts %}
+<script type="text/javascript">
+    $(function() {
+        $('.carro').formset({
+            prefix: '{{ form_veiculo.prefix }}',
+            addText: 'Adicionar novo Veículo',
+            deleteText: 'Remover este veículo',
+        });
+    })
+</script>
+{% endblock scripts %}

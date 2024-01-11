@@ -1,0 +1,55 @@
+.pytest_cache
+
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
+db.sqlite3
+media
+
+# Backup files #
+*.bak
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+
+
+
+# sftp configuration file
+sftp-config.json
+
+# Package control specific files Package
+Control.last-run
+Control.ca-list
+Control.ca-bundle
+Control.system-ca-bundle
+GitHub.sublime-settings
+
+
+# Personal additions
+__pycache__/
+*.pyc
+__localcode
+venv
+env
+.DS_Store
+local_settings.py
+_local_settings.py
+gunicorn-error-log
+db copy.sqlite3
+static/
+!db.sqlite3
+secrets.json

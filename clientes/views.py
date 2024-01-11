@@ -1,8 +1,10 @@
-import openpyxl
 from django.contrib import messages
+from django.forms import inlineformset_factory
 from django.http import JsonResponse, HttpResponse
-import csv
-import xlwt
+from django.template.loader import get_template
+from django.views.generic.edit import FormView
+from django.core.paginator import Paginator
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
@@ -10,9 +12,10 @@ from openpyxl.utils import get_column_letter
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.dimensions import ColumnDimension
 from openpyxl.styles import Font
+from xhtml2pdf import pisa
 
 from .forms import CadastroClienteForm, VeiculoForm, CriarOrcamentoForm
-from .models import Cliente, Veiculo, OrcamentoNaoAprovado, OrdemServicoAberta
+from .models import Cliente, Veiculo, OrcamentoNaoAprovado, OrdemServicoAberta, OrdemServicoConcluida
 from django.db.models import F, Count
 
 
@@ -28,61 +31,73 @@ def clientes(request):
                 'cliente': cliente,
                 'veiculos': veiculos
             })
+
+    paginator = Paginator(clientes_com_veiculo, 3)  # Dividir em páginas de 10 itens cada
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     qtd_clientes = len(clientes_com_veiculo)
 
     return render(request, 'pages/clientes.html', {'form': form,
-                                                   'clientes_com_veiculo': clientes_com_veiculo,
+                                                   'page_obj': page_obj,  # Adicionar a página atual ao contexto
                                                    'qtd_clientes': qtd_clientes})
+
 
 def clientes_lista(request):
     form = CadastroClienteForm()
-    queryset = Cliente.objects.select_related('veiculo')\
-                                                        .values(
-                                                               'id',
+    queryset = Cliente.objects.select_related('veiculo').values('id',
                                                                 'nome',
+                                                                'cpf',
+                                                                'endereco',
                                                                 'telefone',
                                                                 'email',
                                                                 'veiculo__marca',
                                                                 'veiculo__modelo',
-                                                                'veiculo__placa'
+                                                                'veiculo__placa',
+                                                                'veiculo__cor',  # Inclua o campo 'cor' do veículo aqui
+                                                                'veiculo__km'    # Inclua o campo 'km' do veículo aqui
                                                                 )
     result_list = list(queryset)
 
-    clientes_com_carro = []
+    clientes = []
 
     for item in result_list:
         if item['veiculo__placa']:
-            clientes_com_carro.append(item)
+            clientes.append(item)
 
     return JsonResponse({
-        'clientes_com_carro': clientes_com_carro,
-        })
+        'clientes': clientes,
+    })
+
 
 def cadastro_clientes(request):
-    if request.method == "POST":
-        form = CadastroClienteForm(request.POST)
-        veiculo_form = VeiculoForm(request.POST)
-
-        if form.is_valid() and veiculo_form.is_valid():
-            cliente = form.save()
-
-            numero_de_carros = request.POST.get('numero_de_carros', 1)
-            for _ in range(int(numero_de_carros)):
-                veiculo = veiculo_form.save(commit=False)
-                veiculo.cliente = cliente
-                veiculo.save()
-
-            return redirect('clientes')
-    else:
+    if request.method == "GET":
         form = CadastroClienteForm()
-        veiculo_form = VeiculoForm()
+        form_veiculo_factory = inlineformset_factory(Cliente, Veiculo,
+                                                     form=VeiculoForm, extra=1)
+        form_veiculo = form_veiculo_factory()
+        context = {
+            'form': form,
+            'form_veiculo': form_veiculo,
+        }
+        return render(request, "pages/cadastro_clientes.html", context)
+    elif request.method == "POST":
+        form = CadastroClienteForm(request.POST)
+        form_veiculo_factory = inlineformset_factory(Cliente, Veiculo,
+                                                     form=VeiculoForm)
+        form_veiculo = form_veiculo_factory(request.POST)
+        if form.is_valid() and form_veiculo.is_valid():
+            cliente = form.save()
+            form_veiculo.instance = cliente
+            form_veiculo.save()
+            return redirect(reverse('clientes'))
+        else:
+            context = {
+                'form': form,
+                'form_veiculo': form_veiculo,
+            }
+            return render(request, "pages/cadastro_clientes.html", context)
 
-    context = {
-        'form': form,
-        'veiculo_form': veiculo_form
-    }
-
-    return render(request, 'pages/cadastro_clientes.html', context)
 
 def informacoes_cliente(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
@@ -93,31 +108,47 @@ def informacoes_cliente(request, cliente_id):
         'cpf': cliente.cpf,
         'telefone': cliente.telefone,
         'email': cliente.email,
-        'veiculos': [{'modelo': veiculo.modelo, 'placa': veiculo.placa} for veiculo in veiculos]
+        'veiculos': [{'modelo': veiculo.modelo,
+                      'placa': veiculo.placa,
+                      'ano': veiculo.ano,
+                      'km': veiculo.km,
+                      'cor': veiculo.cor} for veiculo in veiculos]
     }
 
-    return JsonResponse({'cliente_detalhes': cliente_detalhes})
+    return JsonResponse(cliente_detalhes)
 
-def editar_cliente(request, cliente_id):
-    cliente = get_object_or_404(Cliente, pk=cliente_id)
-    veiculos = Veiculo.objects.filter(cliente=cliente)
+def editar(request, cliente_id):
+    if request.method == "GET":
+        objeto = Cliente.objects.filter(id=cliente_id).first()
+        if objeto is None:
+            return redirect(reverse('clientes'))
+        form = CadastroClienteForm(instance=objeto)
+        form_veiculo_factory = inlineformset_factory(Cliente, Veiculo, form=VeiculoForm, extra=0)
+        form_veiculo = form_veiculo_factory(instance=objeto)
+        context = {
+            'form': form,
+            'form_veiculo': form_veiculo,
+        }
+        return render(request, "pages/cadastro_clientes.html", context)
+    elif request.method == "POST":
+        objeto = Cliente.objects.filter(id=cliente_id).first()
+        if objeto is None:
+            return redirect(reverse('clientes'))
+        form = CadastroClienteForm(request.POST, instance=objeto)
+        form_veiculo_factory = inlineformset_factory(Cliente, Veiculo, form=VeiculoForm)
+        form_veiculo = form_veiculo_factory(request.POST, instance=objeto)
+        if form.is_valid() and form_veiculo.is_valid():
+            cliente = form.save()
+            form_veiculo.instance = cliente
+            form_veiculo.save()
+            return redirect(reverse('clientes'))
+        else:
+            context = {
+                'form': form,
+                'form_veiculo': form_veiculo,
+            }
+            return render(request, "pages/cadastro_clientes.html", context)
 
-    if request.method == 'POST':
-        form = CadastroClienteForm(request.POST, instance=cliente)
-        if form.is_valid():
-            form.save()
-
-            for veiculo in veiculos:
-                veiculo_form = VeiculoForm(request.POST,
-                                           instance=veiculo)
-                if veiculo_form.is_valid():
-                    veiculo_form.save()
-            return redirect('editar_cliente', cliente_id=cliente.id)
-    else:
-        form = CadastroClienteForm(instance=cliente)
-        veiculo_forms = [VeiculoForm(instance=veiculo) for veiculo in veiculos]
-
-    return render(request, 'pages/editar_cliente.html', {'form': form, 'veiculo_forms': veiculo_forms})
 
 def excluir_cliente(request, cliente_id):
     cliente = get_object_or_404(Cliente, pk=cliente_id)
@@ -125,6 +156,7 @@ def excluir_cliente(request, cliente_id):
 
     id_cliente = cliente_id
     return redirect(reverse('clientes') + f'?aba=att_cliente&id_cliente={id_cliente}')
+
 
 def exportar_clientes(request):
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -177,27 +209,30 @@ def exportar_clientes(request):
     wb.save(response)
     return response
 
+
 def novo_orcamento(request):
-    form = CadastroClienteForm()
-    clientes = Cliente.objects.all()
-    total_orcamentos = OrcamentoNaoAprovado.objects.count()
+    queryset = Cliente.objects.select_related('veiculo').values(
+        'id',
+        'nome',
+        'cpf',
+        'endereco',
+        'telefone',
+        'email',
+        'veiculo__marca',
+        'veiculo__modelo',
+        'veiculo__placa',
+        'veiculo__cor',
+        'veiculo__km'
+    )
 
-    clientes_com_veiculo = []
-    for cliente in clientes:
-        veiculos = Veiculo.objects.filter(cliente=cliente)
-        if veiculos.exists():
-            clientes_com_veiculo.append({
-                'cliente': cliente,
-                'veiculos': veiculos
-            })
-    context = {
-        'form': form,
-        'clientes': clientes,
-        'clientes_com_veiculo': clientes_com_veiculo,  # Remova o espaço extra aqui
-        'total_orcamentos': total_orcamentos
-    }
+    clientes = [item for item in queryset if item['veiculo__placa']]
 
-    return render(request, 'pages/novo_orcamento.html', context)
+    paginator = Paginator(clientes, 10)  # Dividir em páginas de 10 itens cada
+    page_number = request.GET.get('page')  # Obter o número da página da query string
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'pages/novo_orcamento.html', {'page_obj': page_obj} )
+
 
 def contar_orcamentos_nao_aprovados(request):
     clientes_com_orcamentos = Cliente.objects.filter(
@@ -223,15 +258,18 @@ def criar_orcamento(request, cliente_id):
         if form.is_valid():
             orcamento = form.save(commit=False)
             orcamento.cliente = cliente
-            orcamento.veiculo = veiculo
+            orcamento.veiculo = veiculo  # Defina o veículo associado diretamente aqui
             orcamento.save()
 
             total_orcamentos = OrcamentoNaoAprovado.objects.count()
             messages.success(request, 'Orçamento criado com sucesso!', extra_tags='success', fail_silently=True)
-            return redirect('orcamentos_abertos')  # Redirecione para uma página de sucesso após a criação do orçamento
+            return redirect('orcamentos_abertos')
+
     else:
-        form = CriarOrcamentoForm(initial={'cliente': cliente})
+        form = CriarOrcamentoForm()
+
     return render(request, 'pages/criar_orcamento.html', {'form': form, 'cliente': cliente, 'veiculo': veiculo})
+
 
 def orcamentos_lista(request):
     clientes_com_orcamentos = Cliente.objects.filter(
@@ -286,7 +324,6 @@ def excluir_orcamento(request, orcamento_id):
     return redirect(reverse('orcamentos_abertos'))
 
 
-
 # Função para aprovar orçamento e encaminhar para Ordem de Serviço em aberto
 def os_aberta(request, orcamento_id):
     orcamento = OrcamentoNaoAprovado.objects.get(id=orcamento_id)
@@ -318,13 +355,51 @@ def ordem_servico(request):
     for ordem in query_ordem:
         result_query.append(ordem)
 
-    num_items = len(result_query)
 
     context = {
         'result_query': result_query,
-        'num_items': num_items,
+
     }
     return render(request, 'pages/os_aberta.html', context)
+
+
+def concluir_ordem_servico(request, numero_ordem):
+    ordem_aberta = OrdemServicoAberta.objects.get(numero_ordem=numero_ordem)
+
+    # Transferir dados da ordem aberta para ordem concluída
+    ordem_aberta.transfer_to_concluida()
+
+    # Remover a ordem aberta após a transferência
+    ordem_aberta.delete()
+
+    messages.success(request, 'Ordem de serviço concluída e movida para histórico.', extra_tags='success', fail_silently=True)
+    return redirect(reverse('ordens_concluidas'))  # Redirecionar de volta para a lista de ordens abertas
+
+
+def ordens_concluidas(request):
+    query_ordem_fechada = OrdemServicoConcluida.objects.values(
+        'numero_ordem',
+        'data_conclusao_ordem',
+        'servico',
+        'valor_total',
+        'cliente__nome',
+        'cliente__cpf',
+        'cliente__telefone',
+        'cliente__email',
+        'cliente__endereco',
+        'veiculo__marca',
+        'veiculo__modelo',
+        'veiculo__placa',
+        'veiculo__ano',
+    )
+
+
+    result_query_fechada = list(query_ordem_fechada)
+
+    context = {
+        'result_query_fechada': result_query_fechada,
+    }
+    return render(request, 'pages/os_concluida.html', context)
 
 def ordem_lista(request):
     query_ordem = OrdemServicoAberta.objects.values('numero_ordem',
@@ -346,5 +421,57 @@ def ordem_lista(request):
     for ordem in query_ordem:
         result_query.append(ordem)
 
-
     return JsonResponse({'result_query': result_query})
+
+def ordens_concluidas_list(request):
+    query_ordem_fechada = OrdemServicoConcluida.objects.values(
+        'numero_ordem',
+        'data_conclusao_ordem',
+        'servico',
+        'valor_total',
+        'cliente__nome',
+        'cliente__cpf',
+        'cliente__telefone',
+        'cliente__email',
+        'cliente__endereco',
+        'veiculo__marca',
+        'veiculo__modelo',
+        'veiculo__placa',
+        'veiculo__ano',
+    )
+    quantidade_ordens = len(query_ordem_fechada)
+
+    response_data = {
+        'quantidade_ordens': quantidade_ordens,
+        'query_result': list(query_ordem_fechada)
+    }
+
+    return JsonResponse(response_data)
+
+def contar_veiculos_por_cpf(request, cpf):
+    cliente = Cliente.objects.filter(cpf=cpf).first()
+    if cliente:
+        quantidade_veiculos = cliente.veiculo_set.count()
+        return HttpResponse(f"Quantidade de veículos associados ao CPF {cpf}: {quantidade_veiculos}")
+    else:
+        return HttpResponse("CPF não encontrado ou sem veículos associados.")
+
+def gerar_pdf_ordem(request, numero_ordem):
+    # Obtenha os dados da ordem com base no número
+    ordem = OrdemServicoConcluida.objects.get(numero_ordem=numero_ordem)
+
+    # Carregue o template do PDF
+    template_path = 'pages/ordem_pdf.html'
+    template = get_template(template_path)
+    context = {'ordem': ordem}
+
+    # Renderize o template do PDF
+    html = template.render(context)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'filename="ordem_{numero_ordem}.pdf"'
+
+    # Gere o PDF usando o xhtml2pdf
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Erro ao gerar PDF', content_type='text/plain')
+    return response

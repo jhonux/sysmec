@@ -21,13 +21,14 @@
     <!-- <link href="{% static 'css/sb-admin-2.css' %}" rel="stylesheet"> -->
     <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
      <!-- Bootstrap core JavaScript-->
-     <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+     <script src="{% static 'js/jquery-3.5.1.min.js' %}"></script>
+     <script src="{% static 'js/jquery.formset.js' %}"></script>
+     {% comment %} <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script> {% endcomment %}
      <script src="{% static 'js/sb-admin-2.js' %}"></script>
      <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-     <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-     <script src="{% static 'js/demo/chart-area-demo.js' %}"></script>
-     <script src="{% static 'js/demo/chart-pie-demo.js' %}"></script>
-     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+     {% comment %} <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script> {% endcomment %}
+     {% comment %} <script src="{% static 'js/demo/chart-area-demo.js' %}"></script>
+     <script src="{% static 'js/demo/chart-pie-demo.js' %}"></script> {% endcomment %}
 
  
 
@@ -97,7 +98,7 @@
                         <a class="collapse-item" href="{% url 'novo_orcamento' %}">Novo Orçamento</a>
                         <a class="collapse-item" href="{% url 'orcamentos_abertos' %}">Orçamentos</a>
                         <a class="collapse-item" href="{% url 'ordem_servico' %}">OS em aberto</a>
-                        <a class="collapse-item" href="utilities-animation.html">OS concluídas</a>
+                        <a class="collapse-item" href="{% url 'ordens_concluidas' %}">OS concluídas</a>
                     </div>
                 </div>
             </li>
@@ -396,6 +397,8 @@
         </div>
     </div>
     
+    {% block scripts %}
+    {% endblock scripts %}
 </body>
 </html>
 

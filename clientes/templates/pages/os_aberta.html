@@ -64,10 +64,36 @@
                   <td>{{ ordem.servico }}</td>
                   <td>R${{ ordem.valor_estimado }}</td>
                   <td>{{ ordem.data_ordem }}</td>                  
-                <td>
-                  <button class="btn btn-success btn-sm btn-aprovar" data-orcamento-id="{{ orcamento.id }}">
-                      <i class="fas fa-check"></i> Gerar OS
+                
+                  <td>
+                    <button class="btn btn-success btn-sm btn-aprovar" data-toggle="modal" data-target="#confirmModal" data-orcamento-id="{{ ordem.numero_ordem }}">
+                      <i class="fas fa-check"></i> Finalizar OS
                   </button>
+                  
+                </td>
+                
+                <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                              <h5 class="modal-title" id="confirmModalLabel">Confirmar Geração de OS</h5>
+                              <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                                  <span aria-hidden="true">&times;</span>
+                              </button>
+                          </div>
+                          <div class="modal-body">
+                              Tem certeza de que deseja gerar a Ordem de Serviço para o cliente <span id="clienteNome"></span>?
+                          </div>
+                          <form method="post" action="{% url 'concluir_ordem_servico' ordem.numero_ordem %}">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-success">Concluir</button>
+                          </form>
+                      </div>
+                  </div>
+              </div>
+              
+              </div>
+              </div>
               </td>
               </tr>
           {% endfor %}

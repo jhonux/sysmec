@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-=6o6p-a321^fy_zw0!o_01-#@1iu9x15n#xhgmcgxe%%1-(!%o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -71,11 +71,11 @@ WSGI_APPLICATION = 'mecanica.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': '',
-        'USER': '',
+        'NAME': 'mecanica',
+        'USER': 'root',
         'PASSWORD': '',
-        'HOST': '',
-        'PORT': ''
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
 

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/clientes/cadastro_clientes.css'%}">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<div class="container">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800"></h1>
+    </div>
+            <h4 class="mb-3 text-primary">
+                Cadastro de novo cliente
+            </h4>
+            <div class="modal fade" id="clienteModal" tabindex="-1" role="dialog" aria-labelledby="clienteModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="clienteModalLabel">Detalhes do Cliente</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Nome:</strong> {{ cliente.nome }}</p>
+                            <p><strong>CPF:</strong> {{ cliente.cpf }}</p>
+                            <p><strong>Telefone:</strong> {{ cliente.telefone }}</p>
+                            <p><strong>Email:</strong> {{ cliente.email }}</p>
+                            <p><strong>Endereço:</strong> {{ cliente.endereco }}</p>
+            
+                            {% if veiculos %}
+                            <p>Veículos:</p>
+                            <ul>
+                                {% for veiculo in veiculos %}
+                                <li>Modelo: {{ veiculo.modelo }},
+                                   Placa: {{ veiculo.placa }},
+                                  Ano: {{ veiculo.ano }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p>Não possui veículo</p>
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+{% endblock %}

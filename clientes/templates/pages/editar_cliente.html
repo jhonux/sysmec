@@ -25,11 +25,9 @@
                     </div>
 
                     <div class="form-group col-md-11 formulario">                        
-                        {% for veiculo in veiculo_forms %}
-                            <span>MARCA:{{ veiculo.marca }}</span>
-                            <span>MODELO:{{ veiculo.modelo }}</span>
-                            <span>PLACA:{{ veiculo.placa }}</span>
-                            <span>ANO:{{ veiculo.ano }}</span>
+                        {{formset.management_form}}
+                        {% for form in formset%}                        
+                            <span>{{ form.as_table }}</span>                            
                         {% endfor %}                              
                     </div>
                 </div>

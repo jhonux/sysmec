@@ -3,7 +3,6 @@ from datetime import datetime
 from django.db import models
 
 
-
 class Cliente(models.Model):
     nome = models.CharField(max_length=100)
     endereco = models.CharField(max_length=200)
@@ -79,6 +78,18 @@ class OrdemServicoAberta(models.Model):
             self.numero_ordem = self.generate_unique_number()
         super().save(*args, **kwargs)
 
+    def transfer_to_concluida(self):
+        ordem_concluida = OrdemServicoConcluida.objects.create(
+            numero_ordem=self.numero_ordem,
+            data_inicio=self.data_ordem,  # Usando a data de abertura como data de conclusão
+            cliente=self.cliente,
+            veiculo=self.veiculo,
+            servico=self.servico,
+            valor_total=self.valor_estimado,  # Usando o valor estimado como valor total
+            data_conclusao_ordem=datetime.now().date()  # Defina a data de conclusão da ordem
+        )
+
+        return ordem_concluida
     # Restante da classe
 
     class Meta:
@@ -86,26 +97,12 @@ class OrdemServicoAberta(models.Model):
 
 class OrdemServicoConcluida(models.Model):
     numero_ordem = models.CharField(max_length=20, primary_key=True, unique=True)
-    data_conclusao = models.DateField()
+    data_inicio = models.DateField()
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     veiculo = models.ForeignKey(Veiculo, on_delete=models.CASCADE)
     servico = models.CharField(max_length=100)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)
     data_conclusao_ordem = models.DateField()
-
-    @classmethod
-    def transfer(cls, ordem_aberta):
-        ordem_concluida = cls.objects.create(
-            numero_ordem=ordem_aberta.numero_ordem,
-            data_conclusao=ordem_aberta.data_ordem,  # Usando a data de abertura como data de conclusão
-            cliente=ordem_aberta.cliente,
-            veiculo=ordem_aberta.veiculo,
-            servico=ordem_aberta.servico,
-            valor_total=ordem_aberta.valor_estimado,  # Usando o valor estimado como valor total
-            data_conclusao_ordem=datetime.now().date()  # Defina a data de conclusão da ordem
-        )
-        ordem_aberta.delete()  # Remover a ordem de serviço em aberto
-        return ordem_concluida
 
     class Meta:
         db_table = 'tb_os_concluida'

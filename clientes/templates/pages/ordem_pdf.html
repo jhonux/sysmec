@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ordem de Serviço</title>
+    <link rel="stylesheet" href="{% static 'css/clientes/ordem_pdf.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        .info-item {
+            border: 1px solid #ccc;
+            padding: 6px;
+            padding-left: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            width: 100%;
+        }
+    
+        .service-block {
+            margin-bottom: 20px;
+            /* Defina a altura desejada */
+            height: 90vh; /* Por exemplo, aumentando para 200 pixels */
+            overflow-y: auto; /* Adicione rolagem se o conteúdo ultrapassar a altura definida */
+        }
+    
+        .total-section {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+        }
+    </style>
+    
+
+
+</head>
+
+<body>
+    <div class="row">
+        <div class="col-md-12 text-center title">
+            <p class="mt-4">Ordem de Serviço</p>
+            <h1>Auto Center 4 Rodas</h1>
+            <hr>
+        </div>
+    </div>
+    <h4>Dados do Cliente:</h4>
+    <div class="info-item">
+        <table class="table">
+            <tr>
+                <td><strong>Nome:</strong> {{ ordem.cliente.nome }}</td>
+                <td><strong>CPF:</strong> {{ ordem.cliente.cpf }}</td>
+            </tr>
+            <tr>
+                <td><strong>Telefone:</strong> {{ ordem.cliente.telefone }}</td>
+                <td> <strong>Email:</strong> {{ ordem.cliente.email }}</td>
+            </tr>
+            <tr>
+                <td colspan="2"> <strong>Endereço:</strong> {{ ordem.cliente.endereco }}</td>
+            </tr>
+        </table>
+    </div>
+    <h4>Dados do Veículo:</h4>
+    <div class="info-item">
+        <table>
+            <tr>
+                <td><strong>Marca:</strong> {{ ordem.veiculo.marca }}</td>
+                <td><strong>Modelo:</strong> {{ ordem.veiculo.modelo }}</td>
+            </tr>
+            <tr>
+                <td><strong>Placa:</strong> {{ ordem.veiculo.placa }}</td>
+                <td><strong>Ano:</strong> {{ ordem.veiculo.ano }}</td>
+            </tr>
+        </table>
+    </div>
+
+
+    <strong>SERVIÇOS: </strong>
+    <div >
+        <div class="col-md-12">
+            <div class="form-field service-block" style="margin-bottom: 50rem;">
+                <li>{{ ordem.servico }}</li>
+            </div>
+        </div>
+    </div>
+    
+    <div class="total-section">
+        <hr>
+        <strong>VALOR TOTAL: </strong>
+        <div class="info-item">
+            <span>R$ {{ ordem.valor_total }}</span>
+        </div>
+    </div>
+    </div>
+</body>
+
+</html>
+
+
+
+
+
